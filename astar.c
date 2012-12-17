@@ -194,6 +194,7 @@ int astar_plan
 			{
 				nb.ws = to[ i ];
 				nb.g = cost;
+				nb.h = calc_h( nb.ws, goal );
 				nb.f = nb.g + nb.h;
 				nb.actionname = actionnames[ i ];
 				nb.parentws = cur.ws;
