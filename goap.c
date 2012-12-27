@@ -163,7 +163,6 @@ void goap_description( actionplanner_t* ap, char* buf, int sz )
 
 static worldstate_t goap_do_action( actionplanner_t* ap, int actionnr, worldstate_t fr )
 {
-	const worldstate_t pre = ap->act_pre[ actionnr ];
 	const worldstate_t pst = ap->act_pst[ actionnr ];
 	const bfield_t unaffected = pst.dontcare;
 	const bfield_t affected   = ( unaffected ^ -1LL );

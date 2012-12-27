@@ -32,7 +32,7 @@ static int calc_h( worldstate_t fr, worldstate_t to )
 	const bfield_t diff = ( ( fr.values & care ) ^ ( to.values & care ) );
 	int dist=0;
 	for ( int i=0; i<MAXATOMS; ++i )
-		if ( ( dist & ( 1LL << i ) ) != 0 ) dist++;
+		if ( ( diff & ( 1LL << i ) ) != 0 ) dist++;
 	return dist;
 }
 
