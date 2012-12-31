@@ -103,7 +103,7 @@ bool goap_set_pst( actionplanner_t* ap, const char* actionname, const char* atom
 }
 
 
-bool goap_set_cost( actionplanner_t* ap, const char* actionname, const char* atomname, int cost )
+bool goap_set_cost( actionplanner_t* ap, const char* actionname, int cost )
 {
 	const int actidx = idx_for_actionname( ap, actionname );
 	if ( actidx == -1 ) return false;

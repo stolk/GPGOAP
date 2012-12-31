@@ -61,7 +61,7 @@ static void reconstruct_plan( actionplanner_t* ap, astarnode_t* goalnode, const 
 	astarnode_t* curnode = goalnode;
 	int idx = *plansize - 1;
 	int numsteps=0;
-	while ( curnode->actionname )
+	while ( curnode && curnode->actionname )
 	{
 		if ( idx >= 0 )
 		{

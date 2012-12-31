@@ -57,7 +57,7 @@ extern bool goap_set_pre( actionplanner_t* ap, const char* actionname, const cha
 extern bool goap_set_pst( actionplanner_t* ap, const char* actionname, const char* atomname, bool value );
 
 //!< Set the cost for named action.
-extern bool goap_set_cost( actionplanner_t* ap, const char* actionname, const char* atomname, int cost );
+extern bool goap_set_cost( actionplanner_t* ap, const char* actionname, int cost );
 
 //!< Describe the action planner by listing all actions with pre and post conditions. For debugging purpose.
 extern void goap_description( actionplanner_t* ap, char* buf, int sz );
