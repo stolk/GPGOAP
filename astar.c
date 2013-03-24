@@ -176,14 +176,14 @@ int astar_plan
 			const int idx_o = idx_in_opened( to[ i ] );
 			const int idx_c = idx_in_closed( to[ i ] );
 			// if neighbor in OPEN and cost less than g(neighbor):
-			if ( idx_o >= 0 && cost < nb.g )
+			if ( idx_o >= 0 && cost < opened[ idx_o ].g )
 			{
 				// remove neighbor from OPEN, because new path is better
 				if ( numOpened ) opened[ idx_o ] = opened[ numOpened-1 ];
 				numOpened--;
 			}
 			// if neighbor in CLOSED and cost less than g(neighbor):
-			if ( idx_c >= 0 && cost < nb.g )
+			if ( idx_c >= 0 && cost < closed[ idx_c ].g )
 			{
 				// remove neighbor from CLOSED
 				if ( numClosed ) closed[ idx_c ] = closed[ numClosed-1 ];
