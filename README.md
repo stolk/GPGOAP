@@ -128,6 +128,12 @@ The only atom type supported is boolean. This means that scalars cannot be used 
 
 I strongly advice using lowercase names for the world state atoms. I have provided a debug function that will return a string representation of a world state that you can print out. In this representation, lowercase is used for false valued atoms, and uppercase is used for true valued atoms.
 
+## Bugs
+
+When using different costs for the actions, the planner can fail to find a plan.
+It seems to be caused by finding short cuts while planning.
+So the system is broken when setting the action costs.
+
 ## Files
 
 * **goap.h goap.c** implements the planner.
