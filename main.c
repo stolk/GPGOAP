@@ -60,10 +60,12 @@ int main( int argc, char* argv[] )
 	goap_worldstate_set( &ap, &fr, "nearenemy", false );
 	goap_worldstate_set( &ap, &fr, "alive", true );
 
+	goap_set_cost( &ap, "detonatebomb", 5 );	// make suicide more expensive than shooting.
+
 	worldstate_t goal;
 	goap_worldstate_clear( &goal );
 	goap_worldstate_set( &ap, &goal, "enemyalive", false );
-	goap_worldstate_set( &ap, &goal, "alive", true ); // add this to avoid suicide actions in plan.
+	//goap_worldstate_set( &ap, &goal, "alive", true ); // add this to avoid suicide actions in plan.
 
 	worldstate_t states[16];
 	const char* plan[16];

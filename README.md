@@ -130,9 +130,7 @@ I strongly advice using lowercase names for the world state atoms. I have provid
 
 ## Bugs
 
-When using different costs for the actions, the planner can fail to find a plan.
-It seems to be caused by finding short cuts while planning.
-So the system is broken when setting the action costs.
+No known bugs.
 
 ## Files
 
