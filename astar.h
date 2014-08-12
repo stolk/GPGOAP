@@ -20,7 +20,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 #include "goap.h"
 
-struct astarnode;
+namespace GOAP {
 
 //!< A node in our network of world states.
 struct astarnode
@@ -33,19 +33,19 @@ struct astarnode
 	worldstate_t parentws;		//!< Where did we come from?
 };
 
-
 typedef struct astarnode astarnode_t;
-
 
 //! Make a plan of actions that will reach desired world state. Returns total cost of the plan.
 extern int astar_plan
-(
-        actionplanner_t* ap, 		//!< the goap action planner that holds atoms and action repertoire
-        worldstate_t start, 		//!< the current world state
-        worldstate_t goal, 		//!< the desired world state
-        const char** plan,              //!< for returning all actions that make up plan
-        worldstate_t* worldstates,      //!< for returning intermediate world states
-        int* plansize                   //!< in: size of plan buffer, out: size of plan (in nr of steps)
-);
+	(
+	actionplanner_t* ap, 		//!< the goap action planner that holds atoms and action repertoire
+	worldstate_t start, 		//!< the current world state
+	worldstate_t goal, 		//!< the desired world state
+	const char** plan,              //!< for returning all actions that make up plan
+	worldstate_t* worldstates,      //!< for returning intermediate world states
+	int* plansize                   //!< in: size of plan buffer, out: size of plan (in nr of steps)
+	);
+
+}
 
 #endif
