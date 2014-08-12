@@ -14,6 +14,11 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #include <string.h>
 #include <stdio.h>
 
+#if defined(_MSC_VER)
+#define snprintf _snprintf
+#endif
+
+namespace GOAP {
 
 static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 {
@@ -21,9 +26,9 @@ static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 	for ( idx=0; idx < ap->numatoms; ++idx )
 		if ( !strcmp( ap->atm_names[ idx ], atomname ) ) return idx;
 
-	if ( idx < MAXATOMS-1 )
+	if ( idx < ap->get_max_atoms()-1 )
 	{
-		ap->atm_names[ idx ] = atomname;
+		ap->atm_names[ idx ] = const_cast<char*>(atomname);
 		ap->numatoms++;
 		return idx;
 	}
@@ -31,17 +36,16 @@ static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 	return -1;
 }
 
-
 static int idx_for_actionname( actionplanner_t* ap, const char* actionname )
 {
 	int idx;
 	for ( idx=0; idx < ap->numactions; ++idx )
 		if ( !strcmp( ap->act_names[ idx ], actionname ) ) return idx;
 
-	if ( idx < MAXACTIONS-1 )
+	if ( idx < ap->get_max_actions()-1 )
 	{
-		ap->act_names[ idx ] = actionname;
-		ap->act_costs[ idx ] = 1; // default cost is 1
+		ap->act_names[ idx ] = const_cast<char*>(actionname);
+		ap->act_costs[ idx ] = DEFAULT_COST;
 		ap->numactions++;
 		return idx;
 	}
@@ -49,12 +53,11 @@ static int idx_for_actionname( actionplanner_t* ap, const char* actionname )
 	return -1;
 }
 
-
 void goap_actionplanner_clear( actionplanner_t* ap )
 {
 	ap->numatoms = 0;
 	ap->numactions = 0;
-	for ( int i=0; i<MAXATOMS; ++i ) 
+	for ( int i=0; i<ap->get_max_atoms(); ++i ) 
 	{
 		ap->atm_names[ i ] = 0;
 		ap->act_names[ i ] = 0;
@@ -64,13 +67,11 @@ void goap_actionplanner_clear( actionplanner_t* ap )
 	}
 }
 
-
 void goap_worldstate_clear( worldstate_t* ws )
 {
 	ws->values = 0LL;
 	ws->dontcare = -1LL;
 }
-
 
 bool goap_worldstate_set( actionplanner_t* ap, worldstate_t* ws, const char* atomname, bool value )
 {
@@ -81,8 +82,6 @@ bool goap_worldstate_set( actionplanner_t* ap, worldstate_t* ws, const char* ato
 	return true;
 }
 
-
-
 extern bool goap_set_pre( actionplanner_t* ap, const char* actionname, const char* atomname, bool value )
 {
 	const int actidx = idx_for_actionname( ap, actionname );
@@ -91,7 +90,6 @@ extern bool goap_set_pre( actionplanner_t* ap, const char* actionname, const cha
 	goap_worldstate_set( ap, ap->act_pre+actidx, atomname, value );
 	return true;
 }
-
 
 bool goap_set_pst( actionplanner_t* ap, const char* actionname, const char* atomname, bool value )
 {
@@ -102,7 +100,6 @@ bool goap_set_pst( actionplanner_t* ap, const char* actionname, const char* atom
 	return true;
 }
 
-
 bool goap_set_cost( actionplanner_t* ap, const char* actionname, int cost )
 {
 	const int actidx = idx_for_actionname( ap, actionname );
@@ -111,11 +108,10 @@ bool goap_set_cost( actionplanner_t* ap, const char* actionname, int cost )
 	return true;
 }
 
-
 void goap_worldstate_description( const actionplanner_t* ap, const worldstate_t* ws, char* buf, int sz )
 {
 	int added=0;
-	for ( int i=0; i<MAXATOMS; ++i )
+	for ( int i=0; i<ap->get_max_atoms(); ++i )
 	{
 		if ( ( ws->dontcare & ( 1LL << i ) ) == 0LL )
 		{
@@ -132,7 +128,6 @@ void goap_worldstate_description( const actionplanner_t* ap, const worldstate_t*
 	}
 }
 
-
 void goap_description( actionplanner_t* ap, char* buf, int sz )
 {
 	int added=0;
@@ -143,14 +138,14 @@ void goap_description( actionplanner_t* ap, char* buf, int sz )
 
 		worldstate_t pre = ap->act_pre[ a ];
 		worldstate_t pst = ap->act_pst[ a ];
-		for ( int i=0; i<MAXATOMS; ++i )
+		for ( int i=0; i<ap->get_max_atoms(); ++i )
 			if ( ( pre.dontcare & ( 1LL << i ) ) == 0LL )
 			{
 				bool v = ( pre.values & ( 1LL << i ) ) != 0LL;
 				added = snprintf( buf, sz, "  %s==%d\n", ap->atm_names[ i ], v );
 				sz -= added; buf+= added;
 			}
-		for ( int i=0; i<MAXATOMS; ++i )
+		for ( int i=0; i<ap->get_max_atoms(); ++i )
 			if ( ( pst.dontcare & ( 1LL << i ) ) == 0LL )
 			{
 				bool v = ( pst.values & ( 1LL << i ) ) != 0LL;
@@ -159,7 +154,6 @@ void goap_description( actionplanner_t* ap, char* buf, int sz )
 			}
 	}
 }
-
 
 static worldstate_t goap_do_action( actionplanner_t* ap, int actionnr, worldstate_t fr )
 {
@@ -172,8 +166,7 @@ static worldstate_t goap_do_action( actionplanner_t* ap, int actionnr, worldstat
 	return fr;
 }
 
-
-int goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt )
+int goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, char** actionnames, int* actioncosts, int cnt)
 {
 	int writer=0;
 	for ( int i=0; i<ap->numactions && writer<cnt; ++i )
@@ -193,3 +186,4 @@ int goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, w
 	return writer;
 }
 
+}

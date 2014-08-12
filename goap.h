@@ -11,35 +11,68 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #ifndef GOAP_H
 #define GOAP_H
 
+#if !defined(_MSC_VER)
 #include <stdbool.h>
+#endif
 
-#define MAXATOMS 64
-#define MAXACTIONS 64
+//#define MAXATOMS 64
+#define DEFAULT_COST 1
 
 typedef long long int bfield_t;
 
+namespace GOAP {
+
 //!< Describes the world state by listing values (t/f) for all known atoms.
-typedef struct 
+struct worldstate_t
 {
 	bfield_t values;	//!< Values for atoms.
 	bfield_t dontcare;	//!< Mask for atoms that do not matter.
-} worldstate_t;
-
+};
 
 //!< Action planner that keeps track of world state atoms and its action repertoire.
-typedef struct
+struct actionplanner_t
 {
-	const char* atm_names[ MAXATOMS ];	//!< Names associated with all world state atoms.
+	actionplanner_t(size_t max_atoms = 64, size_t max_actions = 64)
+		: _max_actions( max_actions )
+		, _max_atoms( _max_atoms )
+	{
+		atm_names = new char*[max_atoms];
+		act_names = new char*[max_actions];
+		act_pre = new worldstate_t[max_actions];
+		act_pst = new worldstate_t[max_actions];
+		act_costs = new int[max_actions];
+	}
+
+	~actionplanner_t()
+	{
+		delete [] atm_names;
+		delete [] act_names;
+		delete [] act_pre;
+		delete [] act_pst;
+		delete [] act_costs;
+	}
+
+	size_t get_max_atoms() const
+	{
+		return _max_atoms;
+	}
+
+	size_t get_max_actions() const
+	{
+		return _max_actions;
+	}
+
+	char** atm_names;			//!< Names associated with all world state atoms.
 	int numatoms;				//!< Number of world state atoms.
 
-	const char* act_names[ MAXACTIONS ];	//!< Names of all actions in repertoire.
-	worldstate_t act_pre[ MAXACTIONS ];	//!< Preconditions for all actions.
-	worldstate_t act_pst[ MAXACTIONS ];	//!< Postconditions for all actions (action effects).
-	int act_costs[ MAXACTIONS ];		//!< Cost for all actions.
+	char** act_names;	//!< Names of all actions in repertoire.
+	worldstate_t* act_pre;	//!< Preconditions for all actions.
+	worldstate_t* act_pst;	//!< Postconditions for all actions (action effects).
+	int* act_costs;		//!< Cost for all actions.
 	int numactions;				//!< The number of actions in out repertoire.
-
-} actionplanner_t;
-
+	size_t _max_atoms;
+	size_t _max_actions;
+};
 
 //!< Initialize an action planner. It will clear all information on actions and state.
 extern void goap_actionplanner_clear( actionplanner_t* ap );
@@ -66,6 +99,8 @@ extern void goap_description( actionplanner_t* ap, char* buf, int sz );
 extern void goap_worldstate_description( const actionplanner_t* ap, const worldstate_t* ws, char* buf, int sz );
 
 //!< Given the specified 'from' state, list all possible 'to' states along with the action required, and the action cost. For internal use.
-extern int  goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt );
+extern int  goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, char** actionnames, int* actioncosts, int cnt );
+
+}
 
 #endif

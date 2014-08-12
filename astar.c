@@ -13,6 +13,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 #include <limits.h>
 
+namespace GOAP {
 
 #define MAXOPEN	1024	//!< The maximum number of nodes we can store in the opened set.
 #define MAXCLOS 1024	//!< The maximum number of nodes we can store in the closed set.
@@ -24,14 +25,13 @@ static astarnode_t closed[ MAXCLOS ];	//!< The set of nodes we already visited.
 static int numOpened = 0;	//!< The nr of nodes in our opened set.
 static int numClosed = 0;	//!< The nr of nodes in our closed set.
 
-
 //!< This is our heuristic: estimate for remaining distance is the nr of mismatched atoms that matter.
-static int calc_h( worldstate_t fr, worldstate_t to )
+static int calc_h(actionplanner_t* ap, worldstate_t fr, worldstate_t to )
 {
 	const bfield_t care = ( to.dontcare ^ -1LL );
 	const bfield_t diff = ( ( fr.values & care ) ^ ( to.values & care ) );
 	int dist=0;
-	for ( int i=0; i<MAXATOMS; ++i )
+	for ( int i=0; i<ap->get_max_atoms(); ++i )
 		if ( ( diff & ( 1LL << i ) ) != 0 ) dist++;
 	return dist;
 }
@@ -124,7 +124,7 @@ int astar_plan
 	n0.ws = start;
 	n0.parentws = start;
 	n0.g = 0;
-	n0.h = calc_h( start, goal );
+	n0.h = calc_h(ap, start, goal );
 	n0.f = n0.g + n0.h;
 	n0.actionname = 0;
 	opened[ numOpened++ ] = n0;
@@ -155,7 +155,7 @@ int astar_plan
 		// if it matches the goal, we are done!
 		const bfield_t care = ( goal.dontcare ^ -1LL );
 		const bool match = ( ( cur.ws.values & care ) == ( goal.values & care ) );
- 		if ( match ) 
+		if ( match ) 
 		{
 			reconstruct_plan( ap, &cur, plan, worldstates, plansize );
 			return cur.f;
@@ -164,10 +164,10 @@ int astar_plan
 		closed[ numClosed++ ] = cur;
 		if ( numClosed == MAXCLOS ) { LOGI("Closed set overflow"); return -1; } // ran out of storage for closed set
 		// iterate over neighbours
-		const char* actionnames[ MAXACTIONS ];
-		int actioncosts[ MAXACTIONS ];
-		worldstate_t to[ MAXACTIONS ];
-	        const int numtransitions = goap_get_possible_state_transitions( ap, cur.ws, to, actionnames, actioncosts, MAXACTIONS );
+		char** actionnames = new char*[ap->get_max_actions()];
+		int* actioncosts = new int[ap->get_max_actions()];
+		worldstate_t* to = new worldstate_t[ap->get_max_actions()];
+		int numtransitions = goap_get_possible_state_transitions( ap, cur.ws, to, actionnames, actioncosts, ap->get_max_actions());
 		//LOGI( "%d neighbours", numtransitions );
 		for ( int i=0; i<numtransitions; ++i )
 		{
@@ -195,7 +195,7 @@ int astar_plan
 			{
 				nb.ws = to[ i ];
 				nb.g = cost;
-				nb.h = calc_h( nb.ws, goal );
+				nb.h = calc_h(ap, nb.ws, goal );
 				nb.f = nb.g + nb.h;
 				nb.actionname = actionnames[ i ];
 				nb.parentws = cur.ws;
@@ -203,9 +203,13 @@ int astar_plan
 			}
 			if ( numOpened == MAXOPEN ) { LOGI("Opened set overflow"); return -1; } // ran out of storage for opened set
 		}
+
+		delete [] actionnames;
+		delete [] actioncosts;
+		delete [] to;
+
 	} while( true );
 
 	return -1;
 }
-
-
+}

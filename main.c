@@ -11,15 +11,25 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #include "goap.h"	// for planner interface.
 #include "astar.h"	// for A* search over worldstate space.
 
-
 #include <string.h>
 #include <stdio.h>
+
+using namespace GOAP;
+
+const size_t N = 16;
 
 int main( int argc, char* argv[] )
 {
 	static actionplanner_t ap;
 	goap_actionplanner_clear( &ap );
 
+	goap_set_pre( &ap, "andar", "tenerpiernas", true);
+	goap_set_pst( &ap, "andar", "estarcansado", true);
+
+	goap_set_pre( &ap, "correr", "tenerpiernas", true);
+	goap_set_pst( &ap, "correr", "estarcansado", true);
+
+	/*
 	goap_set_pre( &ap, "scout", "armedwithgun", true );
 	goap_set_pst( &ap, "scout", "enemyvisible", true );
 
@@ -43,14 +53,16 @@ int main( int argc, char* argv[] )
 
 	goap_set_pre( &ap, "flee", "enemyvisible", true );
 	goap_set_pst( &ap, "flee", "nearenemy", false );
+	*/
 
-
-	char desc[ 4096 ];
-        goap_description( &ap, desc, sizeof(desc) );
+	char desc[BUFSIZ];
+	goap_description( &ap, desc, sizeof(desc) );
 	LOGI( "%s", desc );
 
 	worldstate_t fr; 
 	goap_worldstate_clear( &fr );
+	goap_worldstate_set( &ap, &fr, "tenerpiernas", true);
+	/*
 	goap_worldstate_set( &ap, &fr, "enemyvisible", false );
 	goap_worldstate_set( &ap, &fr, "armedwithgun", true );
 	goap_worldstate_set( &ap, &fr, "weaponloaded", false );
@@ -59,22 +71,30 @@ int main( int argc, char* argv[] )
 	goap_worldstate_set( &ap, &fr, "armedwithbomb", true );
 	goap_worldstate_set( &ap, &fr, "nearenemy", false );
 	goap_worldstate_set( &ap, &fr, "alive", true );
-
+	*/
+	goap_set_cost( &ap, "andar", 1);	// make suicide more expensive than shooting.
+	goap_set_cost( &ap, "correr", 1);	// make suicide more expensive than shooting.
+	/*
 	goap_set_cost( &ap, "detonatebomb", 5 );	// make suicide more expensive than shooting.
+	*/
 
 	worldstate_t goal;
 	goap_worldstate_clear( &goal );
+	goap_worldstate_set( &ap, &goal, "estarcansado", true);
+
+	/*
 	goap_worldstate_set( &ap, &goal, "enemyalive", false );
+	*/
 	//goap_worldstate_set( &ap, &goal, "alive", true ); // add this to avoid suicide actions in plan.
 
-	worldstate_t states[16];
-	const char* plan[16];
-	int plansz=16;
-	const int plancost = astar_plan( &ap, fr, goal, plan, states, &plansz );
-	LOGI( "plancost = %d", plancost );
+	worldstate_t states[N];
+	const char* plan[N];
+	int plansz = N;
+	const int plancost = astar_plan(&ap, fr, goal, plan, states, &plansz);
+	//LOGI("plancost = %d", plancost);
 	goap_worldstate_description( &ap, &fr, desc, sizeof( desc ) );
-	LOGI( "%-23s%s", "", desc );
-	for ( int i=0; i<plansz && i<16; ++i )
+	//LOGI("%-23s%s", "", desc);
+	for(int i=0; i<plansz; ++i)
 	{
 		goap_worldstate_description( &ap, states+i, desc, sizeof( desc ) );
 		LOGI( "%d: %-20s%s", i, plan[i], desc );
