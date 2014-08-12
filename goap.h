@@ -11,7 +11,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #ifndef GOAP_H
 #define GOAP_H
 
+#if !defined(_MSC_VER)
 #include <stdbool.h>
+#endif
 
 #define MAXATOMS 64
 #define MAXACTIONS 64

@@ -14,6 +14,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #include <string.h>
 #include <stdio.h>
 
+#if defined(_MSC_VER)
+#define snprintf _snprintf
+#endif
 
 static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 {
