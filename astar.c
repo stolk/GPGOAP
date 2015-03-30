@@ -17,13 +17,15 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #define MAXOPEN	1024	//!< The maximum number of nodes we can store in the opened set.
 #define MAXCLOS 1024	//!< The maximum number of nodes we can store in the closed set.
 
+struct astar_instance
+{
+	astarnode_t opened[ MAXOPEN ];	//!< The set of nodes we should consider.
+	astarnode_t closed[ MAXCLOS ];	//!< The set of nodes we already visited.
 
-static astarnode_t opened[ MAXOPEN ];	//!< The set of nodes we should consider.
-static astarnode_t closed[ MAXCLOS ];	//!< The set of nodes we already visited.
-
-static int numOpened = 0;	//!< The nr of nodes in our opened set.
-static int numClosed = 0;	//!< The nr of nodes in our closed set.
-
+	int numOpened;	//!< The nr of nodes in our opened set.
+	int numClosed;	//!< The nr of nodes in our closed set.
+};
+typedef struct astar_instance astar_instance_t;
 
 //!< This is our heuristic: estimate for remaining distance is the nr of mismatched atoms that matter.
 static int calc_h( worldstate_t fr, worldstate_t to )
@@ -38,25 +40,25 @@ static int calc_h( worldstate_t fr, worldstate_t to )
 
 
 //!< Internal function to look up a world state in our opened set.
-static int idx_in_opened( worldstate_t ws )
+static int idx_in_opened( astar_instance_t *instance, worldstate_t ws )
 {
-	for ( int i=0; i<numOpened; ++i )
-		if ( opened[ i ].ws.values == ws.values ) return i;
+	for ( int i=0; i<instance->numOpened; ++i )
+		if ( instance->opened[ i ].ws.values == ws.values ) return i;
 	return -1;
 }
 
 
 //!< Internal function to lookup a world state in our closed set.
-static int idx_in_closed( worldstate_t ws )
+static int idx_in_closed( astar_instance_t *instance, worldstate_t ws )
 {
-	for ( int i=0; i<numClosed; ++i )
-		if ( closed[ i ].ws.values == ws.values ) return i;
+	for ( int i=0; i<instance->numClosed; ++i )
+		if ( instance->closed[ i ].ws.values == ws.values ) return i;
 	return -1;
 }
 
 
 //!< Internal function to reconstruct the plan by tracing from last node to initial node.
-static void reconstruct_plan( astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
+static void reconstruct_plan( astar_instance_t *instance, astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
 {
 	astarnode_t* curnode = goalnode;
 	int idx = *plansize - 1;
@@ -67,8 +69,8 @@ static void reconstruct_plan( astarnode_t* goalnode, const char** plan, worldsta
 		{
 			plan[ idx ] = curnode->actionname;
 			worldstates[ idx ] = curnode->ws;
-			const int i = idx_in_closed( curnode->parentws );
-			curnode = ( i == -1 ) ? 0 : closed+i;
+			const int i = idx_in_closed( instance, curnode->parentws );
+			curnode = ( i == -1 ) ? 0 : instance->closed+i;
 		}
 		--idx;
 		numsteps++;
@@ -118,8 +120,11 @@ int astar_plan
 	int* plansize
 )
 {
+	astar_instance_t instance;
+	instance.numOpened = 0;
+	instance.numClosed = 0;
+	
 	// put start in opened list
-	numOpened=0;
 	astarnode_t n0;
 	n0.ws = start;
 	n0.parentws = start;
@@ -127,28 +132,27 @@ int astar_plan
 	n0.h = calc_h( start, goal );
 	n0.f = n0.g + n0.h;
 	n0.actionname = 0;
-	opened[ numOpened++ ] = n0;
+	instance.opened[ instance.numOpened++ ] = n0;
 	// empty closed list
-	numClosed=0;
 
 	do
 	{
-		if ( numOpened == 0 ) { LOGI( "Did not find a path." ); return -1; }
+		if ( instance.numOpened == 0 ) { LOGI( "Did not find a path." ); return -1; }
 		// find the node with lowest rank
 		int lowestIdx=-1;
 		int lowestVal=INT_MAX;
-		for ( int i=0; i<numOpened; ++i )
+		for ( int i=0; i<instance.numOpened; ++i )
 		{
-			if ( opened[ i ].f < lowestVal )
+			if ( instance.opened[ i ].f < lowestVal )
 			{
-				lowestVal = opened[ i ].f;
+				lowestVal = instance.opened[ i ].f;
 				lowestIdx = i;
 			}
 		}
 		// remove the node with the lowest rank
-		astarnode_t cur = opened[ lowestIdx ];
-		if ( numOpened ) opened[ lowestIdx ] = opened[ numOpened-1 ];
-		numOpened--;
+		astarnode_t cur = instance.opened[ lowestIdx ];
+		if ( instance.numOpened ) instance.opened[ lowestIdx ] = instance.opened[ instance.numOpened-1 ];
+		instance.numOpened--;
 		//static char dsc[2048];
 		//goap_worldstate_description( ap, &cur.ws, dsc, sizeof(dsc) );
 		//LOGI( dsc );
@@ -157,12 +161,12 @@ int astar_plan
 		const bool match = ( ( cur.ws.values & care ) == ( goal.values & care ) );
  		if ( match ) 
 		{
-			reconstruct_plan( &cur, plan, worldstates, plansize );
+			reconstruct_plan( &instance, &cur, plan, worldstates, plansize );
 			return cur.f;
 		}
 		// add it to closed
-		closed[ numClosed++ ] = cur;
-		if ( numClosed == MAXCLOS ) { LOGI("Closed set overflow"); return -1; } // ran out of storage for closed set
+		instance.closed[ instance.numClosed++ ] = cur;
+		if ( instance.numClosed == MAXCLOS ) { LOGI("Closed set overflow"); return -1; } // ran out of storage for closed set
 		// iterate over neighbours
 		const char* actionnames[ MAXACTIONS ];
 		int actioncosts[ MAXACTIONS ];
@@ -173,22 +177,22 @@ int astar_plan
 		{
 			astarnode_t nb;
 			const int cost = cur.g + actioncosts[ i ];
-			int idx_o = idx_in_opened( to[ i ] );
-			const int idx_c = idx_in_closed( to[ i ] );
+			int idx_o = idx_in_opened( &instance, to[ i ] );
+			const int idx_c = idx_in_closed( &instance, to[ i ] );
 			// if neighbor in OPEN and cost less than g(neighbor):
-			if ( idx_o >= 0 && cost < opened[ idx_o ].g )
+			if ( idx_o >= 0 && cost < instance.opened[ idx_o ].g )
 			{
 				// remove neighbor from OPEN, because new path is better
-				if ( numOpened ) opened[ idx_o ] = opened[ numOpened-1 ];
-				numOpened--;
+				if ( instance.numOpened ) instance.opened[ idx_o ] = instance.opened[ instance.numOpened-1 ];
+				instance.numOpened--;
 				idx_o = -1; // BUGFIX: neighbor is no longer in OPEN, signal this so that we can re-add it.
 			}
 			// if neighbor in CLOSED and cost less than g(neighbor):
-			if ( idx_c >= 0 && cost < closed[ idx_c ].g )
+			if ( idx_c >= 0 && cost < instance.closed[ idx_c ].g )
 			{
 				// remove neighbor from CLOSED
-				if ( numClosed ) closed[ idx_c ] = closed[ numClosed-1 ];
-				numClosed--;
+				if ( instance.numClosed ) instance.closed[ idx_c ] = instance.closed[ instance.numClosed-1 ];
+				instance.numClosed--;
 			}
 			// if neighbor not in OPEN and neighbor not in CLOSED:
 			if ( idx_c == -1 && idx_o == -1 )
@@ -199,9 +203,9 @@ int astar_plan
 				nb.f = nb.g + nb.h;
 				nb.actionname = actionnames[ i ];
 				nb.parentws = cur.ws;
-				opened[ numOpened++ ] = nb;
+				instance.opened[ instance.numOpened++ ] = nb;
 			}
-			if ( numOpened == MAXOPEN ) { LOGI("Opened set overflow"); return -1; } // ran out of storage for opened set
+			if ( instance.numOpened == MAXOPEN ) { LOGI("Opened set overflow"); return -1; } // ran out of storage for opened set
 		}
 	} while( true );
 
