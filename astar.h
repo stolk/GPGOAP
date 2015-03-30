@@ -11,8 +11,17 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #ifndef ASTAR_H
 #define ASTAR_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif // __cplusplus
+
 #ifndef LOGI
+#ifdef __cplusplus
+#include <cstdio>
+#else
 #include <stdio.h>
+#endif
 #define LOGI(...) { printf( __VA_ARGS__ ); printf("\n"); }
 #define LOGW(...) { printf( "WRN " __VA_ARGS__ ); printf("\n"); }
 #define LOGE(...) { printf( "ERR " __VA_ARGS__ ); printf("\n"); }
@@ -47,5 +56,9 @@ extern int astar_plan
         worldstate_t* worldstates,      //!< for returning intermediate world states
         int* plansize                   //!< in: size of plan buffer, out: size of plan (in nr of steps)
 );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
