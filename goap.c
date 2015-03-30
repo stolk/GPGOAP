@@ -121,7 +121,7 @@ void goap_worldstate_description( const actionplanner_t* ap, const worldstate_t*
 		{
 			const char* val = ap->atm_names[ i ];
 			char upval[ 128 ];
-			int j;
+			size_t j;
 			for ( j=0; j<strlen( val ); ++j )
 				upval[ j ] = ( val[ j ] - 32 );
 			upval[ j++ ] = 0;
