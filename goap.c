@@ -21,7 +21,7 @@ static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 	for ( idx=0; idx < ap->numatoms; ++idx )
 		if ( !strcmp( ap->atm_names[ idx ], atomname ) ) return idx;
 
-	if ( idx < MAXATOMS-1 )
+	if ( idx < MAXATOMS )
 	{
 		ap->atm_names[ idx ] = atomname;
 		ap->numatoms++;
@@ -38,7 +38,7 @@ static int idx_for_actionname( actionplanner_t* ap, const char* actionname )
 	for ( idx=0; idx < ap->numactions; ++idx )
 		if ( !strcmp( ap->act_names[ idx ], actionname ) ) return idx;
 
-	if ( idx < MAXACTIONS-1 )
+	if ( idx < MAXACTIONS )
 	{
 		ap->act_names[ idx ] = actionname;
 		ap->act_costs[ idx ] = 1; // default cost is 1
