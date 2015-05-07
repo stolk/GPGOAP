@@ -11,12 +11,20 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #ifndef GOAP_H
 #define GOAP_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#include <cstdbool>
+#include <cstdint>
+#else
 #include <stdbool.h>
+#include <stdint.h>
+#endif
 
 #define MAXATOMS 64
 #define MAXACTIONS 64
 
-typedef long long int bfield_t;
+typedef int64_t bfield_t;
 
 //!< Describes the world state by listing values (t/f) for all known atoms.
 typedef struct 
@@ -67,5 +75,9 @@ extern void goap_worldstate_description( const actionplanner_t* ap, const worlds
 
 //!< Given the specified 'from' state, list all possible 'to' states along with the action required, and the action cost. For internal use.
 extern int  goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
