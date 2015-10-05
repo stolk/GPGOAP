@@ -174,7 +174,7 @@ int astar_plan
 			astarnode_t nb;
 			const int cost = cur.g + actioncosts[ i ];
 			int idx_o = idx_in_opened( to[ i ] );
-			const int idx_c = idx_in_closed( to[ i ] );
+			int idx_c = idx_in_closed( to[ i ] );
 			// if neighbor in OPEN and cost less than g(neighbor):
 			if ( idx_o >= 0 && cost < opened[ idx_o ].g )
 			{
@@ -189,6 +189,7 @@ int astar_plan
 				// remove neighbor from CLOSED
 				if ( numClosed ) closed[ idx_c ] = closed[ numClosed-1 ];
 				numClosed--;
+				idx_c = -1; // BUGFIX: neighbour is no longer in CLOSED< signal this so that we can re-add it.
 			}
 			// if neighbor not in OPEN and neighbor not in CLOSED:
 			if ( idx_c == -1 && idx_o == -1 )
