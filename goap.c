@@ -85,7 +85,7 @@ bool goap_worldstate_set( actionplanner_t* ap, worldstate_t* ws, const char* ato
 	const int idx = idx_for_atomname( ap, atomname );
 	if ( idx == -1 ) return false;
 	ws->values = value ? ( ws->values | ( 1LL << idx ) ) : ( ws->values & ~( 1LL << idx ) );
-	ws->dontcare ^= ( 1LL << idx );
+	ws->dontcare &= ~( 1LL << idx );
 	return true;
 }
 
