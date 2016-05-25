@@ -62,13 +62,13 @@ void goap_actionplanner_clear( actionplanner_t* ap )
 	for ( int i=0; i<MAXATOMS; ++i ) 
 	{
 		ap->atm_names[ i ] = 0;
-		goap_worldstate_clear( ap->act_pre+i );
-		goap_worldstate_clear( ap->act_pst+i );
 	}
 	for ( int i=0; i<MAXACTIONS; ++i )
 	{
 		ap->act_names[ i ] = 0;
 		ap->act_costs[ i ] = 0;
+		goap_worldstate_clear( ap->act_pre+i );
+		goap_worldstate_clear( ap->act_pst+i );
 	}
 }
 
