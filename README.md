@@ -1,9 +1,9 @@
-#General Purpose GOAP
+# General Purpose GOAP
 
-##Introduction
+## Introduction
 GOAP, or Goal Oriented Action Planning is a powerful tool to create game AI. For all the details I will refer to [Jeff Orkin's collection of articles](http://web.media.mit.edu/~jorkin/goap.html). But in short: GOAP will let computer controlled characters (NPCs) make action plans that can achieve desired goals. It will do so in a highly maintainable, easily extendible, highly modular fashion. Naive implementation of AI code will invariably blow up for any non trivial problem. GOAP on the other hand, is robust and is unlikely to buckle under large complexity. This software implements GOAP in the C programming language. It does so in a generic fashion, which makes it suitable for many projects.
 
-##Basics of GOAP
+## Basics of GOAP
 Creating a plan for AI controlled entities comes down to the following steps:
 
 1. Describe the repertoire of actions available.
@@ -20,7 +20,7 @@ To describe world state, we define a set of world state atoms. Each atom has a t
 
 The planner will then be able to formulate a plan of actions that takes the world to the desired state, provided such a path exists. The plan formulated is guaranteed to be the lowest cost plan.
 
-##Example Scenario
+## Example Scenario
 
 Let us consider a planner for an AI soldier. Our soldier can perform the following actions: scout, approach, aim, shoot, load, detonatebomb, flee.
 
@@ -56,7 +56,7 @@ If we follow this plan, we have the unfortunate side effect that not only our en
     3: shoot               ARMEDWITHGUN,ENEMYVISIBLE,nearenemy,WEAPONLOADED,ENEMYLINEDUP,enemyalive,ARMEDWITHBOMB,ALIVE,
 
 
-##Example Code
+## Example Code
 
 The entire scenario described above is implemented succinctly in these few lines of code:
 
