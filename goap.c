@@ -10,7 +10,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 #if defined( _MSC_VER )
 #	define _CRT_SECURE_NO_WARNINGS
-#	define snprintf _snprintf
+	#if _MSC_VER < 1900
+	#  define snprintf _snprintf
+	#endif
 #endif
 
 #include "goap.h"
@@ -24,16 +26,16 @@ static int idx_for_atomname( actionplanner_t* ap, const char* atomname )
 {
 	int idx;
 	for ( idx=0; idx < ap->numatoms; ++idx )
-		if ( !strcmp( ap->atm_names[ idx ], atomname ) ) return idx;
+		if ( !strcmp( ap->atm_names[ idx ], atomname ) ) return idx;		// Atom found - returning it
 
-	if ( idx < MAXATOMS )
+	if ( idx < MAXATOMS )													// New atom - registering and returning it
 	{
 		ap->atm_names[ idx ] = atomname;
 		ap->numatoms++;
 		return idx;
 	}
 
-	return -1;
+	return -1;																// Too many atoms!
 }
 
 
@@ -86,6 +88,19 @@ bool goap_worldstate_set( actionplanner_t* ap, worldstate_t* ws, const char* ato
 	if ( idx == -1 ) return false;
 	ws->values = value ? ( ws->values | ( 1LL << idx ) ) : ( ws->values & ~( 1LL << idx ) );
 	ws->dontcare &= ~( 1LL << idx );
+	return true;
+}
+
+
+bool goap_worldstate_get(actionplanner_t* ap, worldstate_t* ws, const char* atomname, bool* value)
+{
+	int idx = -1;
+	for (idx = 0; idx < ap->numatoms; ++idx)
+		if (!strcmp(ap->atm_names[idx], atomname)) break;
+
+	if (idx == -1) return false;
+
+	*value = ((ws->values & (1LL << idx)) != 0LL);
 	return true;
 }
 

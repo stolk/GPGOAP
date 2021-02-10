@@ -58,6 +58,9 @@ extern void goap_worldstate_clear( worldstate_t* ws );
 //!< Set an atom of worldstate to specified value.
 extern bool goap_worldstate_set( actionplanner_t* ap, worldstate_t* ws, const char* atomname, bool value );
 
+//!< Get the value of a specified atom of worldstate.
+extern bool goap_worldstate_get(actionplanner_t* ap, worldstate_t* ws, const char* atomname, bool* value);
+
 //!< Add a precondition for named action.
 extern bool goap_set_pre( actionplanner_t* ap, const char* actionname, const char* atomname, bool value );
 
