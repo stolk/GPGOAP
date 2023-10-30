@@ -169,7 +169,7 @@ void goap_description( actionplanner_t* ap, char* buf, int sz )
 }
 
 
-static worldstate_t goap_do_action( actionplanner_t* ap, int actionnr, worldstate_t fr )
+static worldstate_t goap_do_action( actionplanner_t const* ap, int actionnr, worldstate_t fr )
 {
 	const worldstate_t pst = ap->act_pst[ actionnr ];
 	const bfield_t unaffected = pst.dontcare;
@@ -181,7 +181,7 @@ static worldstate_t goap_do_action( actionplanner_t* ap, int actionnr, worldstat
 }
 
 
-int goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt )
+int goap_get_possible_state_transitions( actionplanner_t const* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt )
 {
 	int writer=0;
 	for ( int i=0; i<ap->numactions && writer<cnt; ++i )

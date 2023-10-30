@@ -49,7 +49,7 @@ typedef struct astarnode astarnode_t;
 //! Make a plan of actions that will reach desired world state. Returns total cost of the plan.
 extern int astar_plan
 (
-        actionplanner_t* ap, 		//!< the goap action planner that holds atoms and action repertoire
+        actionplanner_t const* ap, 		//!< the goap action planner that holds atoms and action repertoire
         worldstate_t start, 		//!< the current world state
         worldstate_t goal, 		//!< the desired world state
         const char** plan,              //!< for returning all actions that make up plan
