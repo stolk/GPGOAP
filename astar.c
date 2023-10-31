@@ -56,7 +56,7 @@ static int idx_in_closed( worldstate_t ws )
 
 
 //!< Internal function to reconstruct the plan by tracing from last node to initial node.
-static void reconstruct_plan( actionplanner_t* ap, astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
+static void reconstruct_plan( actionplanner_t const* ap, astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
 {
 	astarnode_t* curnode = goalnode;
 	int idx = *plansize - 1;
@@ -110,7 +110,7 @@ while lowest rank in OPEN is not the GOAL:
 
 int astar_plan
 ( 
-	actionplanner_t* ap,
+	actionplanner_t const* ap,
 	worldstate_t start,
 	worldstate_t goal,
 	const char** plan,
@@ -167,7 +167,7 @@ int astar_plan
 		const char* actionnames[ MAXACTIONS ];
 		int actioncosts[ MAXACTIONS ];
 		worldstate_t to[ MAXACTIONS ];
-	        const int numtransitions = goap_get_possible_state_transitions( ap, cur.ws, to, actionnames, actioncosts, MAXACTIONS );
+		const int numtransitions = goap_get_possible_state_transitions( ap, cur.ws, to, actionnames, actioncosts, MAXACTIONS );
 		//LOGI( "%d neighbours", numtransitions );
 		for ( int i=0; i<numtransitions; ++i )
 		{

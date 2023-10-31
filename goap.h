@@ -74,7 +74,7 @@ extern void goap_description( actionplanner_t* ap, char* buf, int sz );
 extern void goap_worldstate_description( const actionplanner_t* ap, const worldstate_t* ws, char* buf, int sz );
 
 //!< Given the specified 'from' state, list all possible 'to' states along with the action required, and the action cost. For internal use.
-extern int  goap_get_possible_state_transitions( actionplanner_t* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt );
+extern int  goap_get_possible_state_transitions( actionplanner_t const* ap, worldstate_t fr, worldstate_t* to, const char** actionnames, int* actioncosts, int cnt );
 
 #ifdef __cplusplus
 }
