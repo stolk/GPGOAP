@@ -56,7 +56,7 @@ static int idx_in_closed( worldstate_t ws )
 
 
 //!< Internal function to reconstruct the plan by tracing from last node to initial node.
-static void reconstruct_plan( actionplanner_t const* ap, astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
+static void reconstruct_plan( astarnode_t* goalnode, const char** plan, worldstate_t* worldstates, int* plansize )
 {
 	astarnode_t* curnode = goalnode;
 	int idx = *plansize - 1;
@@ -157,7 +157,7 @@ int astar_plan
 		const bool match = ( ( cur.ws.values & care ) == ( goal.values & care ) );
  		if ( match ) 
 		{
-			reconstruct_plan( ap, &cur, plan, worldstates, plansize );
+			reconstruct_plan( &cur, plan, worldstates, plansize );
 			return cur.f;
 		}
 		// add it to closed

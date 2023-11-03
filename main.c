@@ -17,6 +17,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 int main( int argc, char* argv[] )
 {
+	(void) argc;
+	(void) argv;
 	static actionplanner_t ap;
 	goap_actionplanner_clear( &ap );
 
